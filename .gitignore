@@ -1,0 +1,12 @@
+node_modules/
+client/node_modules/
+client/dist/
+data/*.db
+data/*.db-*
+*.log
+push-github.js
+tunnel.js
+tunnel-fixed.js
+clean.js
+import-emp.js
+.env

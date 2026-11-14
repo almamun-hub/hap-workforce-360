@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: hap-workforce-360
+    env: node
+    buildCommand: npm install && cd client && npm install && npm run build && cd ..
+    startCommand: node server/index.js
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+    disk:
+      name: hap-data
+      mountPath: /app/data
+      sizeGB: 1
