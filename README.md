@@ -71,3 +71,5 @@ Set `JWT_SECRET` to a strong random string, and `PORT` as provided by the host.
 
 ## Modules
 Dashboard, Employee Management, Daily Attendance, Attendance History, Overtime Management, Employee Movement, Attendance Reports, Manpower Reports, Absenteeism, Attendance Calendar, Ex-Employees, User Management, Settings.
+
+
