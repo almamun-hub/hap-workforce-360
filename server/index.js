@@ -1,6 +1,15 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
+// Load .env if present
+const envPath = path.join(__dirname, '..', '.env');
+if (fs.existsSync(envPath)) {
+  for (const line of fs.readFileSync(envPath, 'utf8').split(/\r?\n/)) {
+    const m = line.match(/^\s*([A-Z_]+)\s*=\s*(.*)\s*$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
+  }
+}
 const { db, initPromise } = require('./db');
 
 const authRoutes = require('./routes/auth');
@@ -27,7 +36,6 @@ app.use('/api/settings', setRoutes);
 
 // serve client build if exists
 const clientDist = path.join(__dirname, '..', 'client', 'dist');
-const fs = require('fs');
 if (fs.existsSync(clientDist)) {
   app.use(express.static(clientDist));
   app.get('*', (req,res)=> res.sendFile(path.join(clientDist,'index.html')));
