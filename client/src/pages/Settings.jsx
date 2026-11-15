@@ -8,6 +8,7 @@ export default function Settings(){
   const [holidays,setHolidays]=useState([]);
   const [hDate,setHDate]=useState('');
   const [hName,setHName]=useState('');
+  const [msg,setMsg]=useState('');
   const load = async ()=>{
     const s = await api.get('/settings'); setSettings(s.data.settings);
     const g = await api.get('/settings/production-groups'); setGroups(g.data.groups);
@@ -16,15 +17,16 @@ export default function Settings(){
   useEffect(()=>{ load(); },[]);
   const saveSettings = async ()=>{
     await api.put('/settings', settings);
-    alert('Saved');
+    setMsg('Settings saved'); setTimeout(()=>setMsg(''),3000);
   };
-  const addGroup = async ()=>{ if(!newGroup) return; await api.post('/settings/production-groups',{name:newGroup}); setNewGroup(''); load(); };
-  const delGroup = async (g)=>{ await api.delete('/settings/production-groups/'+encodeURIComponent(g)); load(); };
-  const addHoliday = async ()=>{ if(!hDate) return; await api.post('/settings/holidays',{date:hDate,name:hName}); setHDate(''); setHName(''); load(); };
-  const delHoliday = async (d)=>{ await api.delete('/settings/holidays/'+d); load(); };
+  const addGroup = async ()=>{ if(!newGroup) return; await api.post('/settings/production-groups',{name:newGroup}); setNewGroup(''); setMsg('Group added'); setTimeout(()=>setMsg(''),3000); load(); };
+  const delGroup = async (g)=>{ await api.delete('/settings/production-groups/'+encodeURIComponent(g)); setMsg('Group deleted'); setTimeout(()=>setMsg(''),3000); load(); };
+  const addHoliday = async ()=>{ if(!hDate) return; await api.post('/settings/holidays',{date:hDate,name:hName}); setHDate(''); setHName(''); setMsg('Holiday added'); setTimeout(()=>setMsg(''),3000); load(); };
+  const delHoliday = async (d)=>{ await api.delete('/settings/holidays/'+d); setMsg('Holiday deleted'); setTimeout(()=>setMsg(''),3000); load(); };
 
   return (
     <div>
+      {msg && <div className="mb-3 text-green-600 text-sm bg-green-50 p-2 rounded">{msg}</div>}
       <h1 className="text-2xl font-bold mb-4">Settings</h1>
       <div className="bg-white p-4 rounded shadow mb-4">
         <h3 className="font-semibold mb-2">Configuration</h3>

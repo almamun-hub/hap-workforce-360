@@ -12,6 +12,7 @@ export default function Employees(){
   const [editing,setEditing]=useState(null);
   const [profile,setProfile]=useState(null);
   const [month,setMonth]=useState(new Date().toISOString().slice(0,7));
+  const [msg,setMsg]=useState('');
 
   const load = ()=> api.get('/employees', {params:{search,pg,status}}).then(r=>setList(r.data.employees));
   useEffect(()=>{ load(); },[search,pg,status]);
@@ -24,9 +25,10 @@ export default function Employees(){
   const openEdit = (e)=>{ setEditing(e); setForm({...empty,...e, joining_date: e.current_joining_date || empty.joining_date}); setShowForm(true); };
 
   const save = async ()=>{
-    if(editing){ await api.put('/employees/'+editing.id, form); }
-    else { await api.post('/employees', form); }
+    if(editing){ await api.put('/employees/'+editing.id, form); setMsg('Employee updated successfully'); }
+    else { await api.post('/employees', form); setMsg('Employee added successfully'); }
     setShowForm(false); load();
+    setTimeout(()=>setMsg(''),3000);
   };
 
   const markLeft = async (e)=>{
@@ -35,14 +37,14 @@ export default function Employees(){
     const reason = prompt('Exit reason: Resignation/Termination/Contract End/Personal Reason/Other','Resignation');
     const remarks = prompt('Exit remarks:','')||'';
     await api.post('/employees/'+e.id+'/exit', { last_working_date:lwd, exit_reason:reason, exit_remarks:remarks });
-    load();
+    setMsg('Employee marked as left'); setTimeout(()=>setMsg(''),3000); load();
   };
 
   const rejoin = async (e)=>{
     const jd = prompt('Rejoining date (YYYY-MM-DD):', new Date().toISOString().slice(0,10));
     if(!jd) return;
     await api.post('/employees/'+e.id+'/rejoin', { joining_date:jd });
-    load();
+    setMsg('Employee rejoined'); setTimeout(()=>setMsg(''),3000); load();
   };
 
   const viewProfile = async (e)=>{
@@ -52,6 +54,7 @@ export default function Employees(){
 
   return (
     <div>
+      {msg && <div className="mb-3 text-green-600 text-sm bg-green-50 p-2 rounded">{msg}</div>}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Employee Management</h1>
         <button onClick={openAdd} className="bg-blue-600 text-white px-4 py-2 rounded">Add Employee</button>

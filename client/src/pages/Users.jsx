@@ -4,24 +4,26 @@ import api from '../lib/api';
 export default function Users(){
   const [list,setList]=useState([]);
   const [form,setForm]=useState({username:'',password:'',full_name:'',role:'operator'});
+  const [msg,setMsg]=useState('');
   const load = ()=> api.get('/users').then(r=>setList(r.data.users));
   useEffect(()=>{ load(); },[]);
   const create = async ()=>{
     await api.post('/users', form);
     setForm({username:'',password:'',full_name:'',role:'operator'});
-    load();
+    setMsg('User created'); setTimeout(()=>setMsg(''),3000); load();
   };
   const reset = async (u)=>{
     const pw = prompt('New password:'); if(!pw) return;
     await api.post('/users/'+u.id+'/reset-password', {password:pw});
-    alert('Reset done');
+    setMsg('Password reset'); setTimeout(()=>setMsg(''),3000);
   };
   const toggle = async (u)=>{
     await api.put('/users/'+u.id, {is_active: !u.is_active});
-    load();
+    setMsg('User updated'); setTimeout(()=>setMsg(''),3000); load();
   };
   return (
     <div>
+      {msg && <div className="mb-3 text-green-600 text-sm bg-green-50 p-2 rounded">{msg}</div>}
       <h1 className="text-2xl font-bold mb-4">User Management</h1>
       <div className="bg-white p-4 rounded shadow mb-4">
         <h3 className="font-semibold mb-2">Create User</h3>
