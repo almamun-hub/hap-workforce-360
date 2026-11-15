@@ -8,12 +8,10 @@ router.get('/eligible', authRequired, async (req,res)=>{
   const date = req.query.date || H.today();
   const pg = req.query.pg;
   const search = req.query.search;
-  let rows = H.eligibleActiveOn(db, date);
-  // eligibleActiveOn uses db.prepare (sync) -> need async version. Rewrite inline.
   const r = await db.query(`SELECT DISTINCT e.id, e.employee_id, e.name, e.pg, e.designation, e.employment_type
     FROM employees e JOIN employment_history eh ON eh.employee_fk = e.id
     WHERE e.is_deleted=0 AND eh.joining_date<=$1 AND (eh.last_working_date IS NULL OR eh.last_working_date>=$2)`, [date, date]);
-  rows = r.rows;
+  let rows = r.rows;
   if(pg) rows = rows.filter(x=>x.pg===pg);
   if(search){ const s=search.toLowerCase(); rows = rows.filter(x=>x.name.toLowerCase().includes(s) || x.employee_id.toLowerCase().includes(s)); }
   const r2 = await db.query('SELECT * FROM attendance_records WHERE attendance_date=$1', [date]);
