@@ -41,6 +41,17 @@ if (fs.existsSync(clientDist)) {
   app.get('*', (req,res)=> res.sendFile(path.join(clientDist,'index.html')));
 }
 
+// Global error handlers to prevent crashes
+process.on('unhandledRejection', (err) => console.error('UnhandledRejection:', err));
+process.on('uncaughtException', (err) => console.error('UncaughtException:', err));
+
+// Express error handler
+app.use((err, req, res, next) => {
+  console.error('Express error:', err);
+  if (res.headersSent) return next(err);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
 const PORT = process.env.PORT || 3001;
 initPromise.then(() => {
   app.listen(PORT, '0.0.0.0', ()=> console.log(`HAP Workforce 360 server running on 0.0.0.0:${PORT}`));

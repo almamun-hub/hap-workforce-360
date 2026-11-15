@@ -34,6 +34,7 @@ router.get('/progress', authRequired, async (req,res)=>{
 });
 
 router.post('/bulk', authRequired, async (req,res)=>{
+  try {
   const { date, entries } = req.body || {};
   if(!date || !Array.isArray(entries)) return res.status(400).json({error:'date and entries required'});
   await db.transaction(async (q) => {
@@ -62,6 +63,7 @@ router.post('/bulk', authRequired, async (req,res)=>{
     }
   });
   res.json({ ok:true });
+  } catch(e){ console.error(e); res.status(500).json({error:e.message}); }
 });
 
 router.put('/:id', authRequired, adminOnly, async (req,res)=>{
