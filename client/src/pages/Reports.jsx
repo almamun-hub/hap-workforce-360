@@ -13,6 +13,8 @@ export default function Reports(){
   const [dailyAbsent,setDailyAbsent]=useState([]);
   const [dailyLeave,setDailyLeave]=useState([]);
   const [copied,setCopied]=useState(false);
+  const [showCopyModal,setShowCopyModal]=useState(false);
+  const [copyText,setCopyText]=useState('');
   const [data,setData]=useState(null);
   React.useEffect(()=>{ api.get('/settings/production-groups').then(r=>setGroups(r.data.groups||[])); },[]);
   React.useEffect(()=>{ setData(null); },[tab]);
@@ -113,26 +115,27 @@ export default function Reports(){
                 dailyLeave.forEach(r=>{ msg += r.employee_id+' - '+r.name+' - '+(r.department||'')+' - '+(r.remarks||'')+'\n'; });
               }
               const doCopy = async () => {
+                let ok = false;
                 try {
                   if (navigator.clipboard && window.isSecureContext) {
                     await navigator.clipboard.writeText(msg);
-                    setCopied(true); setTimeout(()=>setCopied(false),2000); return;
+                    ok = true;
                   }
                 } catch(e){}
-                // fallback
-                try {
-                  const ta = document.createElement('textarea');
-                  ta.value = msg;
-                  ta.style.position = 'fixed'; ta.style.opacity = '0';
-                  document.body.appendChild(ta);
-                  ta.select();
-                  document.execCommand('copy');
-                  document.body.removeChild(ta);
-                  setCopied(true); setTimeout(()=>setCopied(false),2000);
-                } catch(e) {
-                  setCopied(false);
-                  alert(msg);
+                if(!ok){
+                  try {
+                    const ta = document.createElement('textarea');
+                    ta.value = msg;
+                    ta.style.position = 'fixed'; ta.style.top = '0'; ta.style.left = '0';
+                    ta.style.width = '1px'; ta.style.height = '1px'; ta.style.opacity = '0.01';
+                    document.body.appendChild(ta);
+                    ta.focus(); ta.select(); ta.setSelectionRange(0, msg.length);
+                    ok = document.execCommand('copy');
+                    document.body.removeChild(ta);
+                  } catch(e){ ok = false; }
                 }
+                if(ok){ setCopied(true); setTimeout(()=>setCopied(false),2000); }
+                else { setCopyText(msg); setShowCopyModal(true); }
               };
               doCopy();
             }} className="bg-green-600 text-white px-3 py-1 rounded text-sm">Copy Report</button>
@@ -239,6 +242,20 @@ export default function Reports(){
           <div className="bg-white rounded shadow overflow-auto">
             <table className="w-full text-sm"><thead className="bg-gray-100"><tr><th>Date</th><th>Emp ID</th><th>Name</th><th>Department</th><th>PG</th><th>Remarks</th></tr></thead>
             <tbody>{data.records.map((r,i)=>(<tr key={i} className="border-t"><td className="p-2">{r.attendance_date}</td><td className="p-2">{r.employee_id}</td><td className="p-2">{r.name}</td><td className="p-2">{r.department}</td><td className="p-2">{r.pg}</td><td className="p-2">{r.remarks}</td></tr>))}</tbody></table>
+          </div>
+        </div>
+      )}
+
+      {showCopyModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded p-4 w-full max-w-md">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="font-bold">Copy Report</h3>
+              <button onClick={()=>setShowCopyModal(false)} className="text-gray-500">X</button>
+            </div>
+            <p className="text-xs text-gray-500 mb-2">Auto-copy failed on this device. Long-press the text below and copy manually.</p>
+            <textarea readOnly value={copyText} className="w-full border rounded p-2 text-sm h-48" onClick={(e)=>e.target.select()} />
+            <button onClick={()=>setShowCopyModal(false)} className="mt-2 bg-blue-600 text-white px-3 py-1 rounded text-sm">Close</button>
           </div>
         </div>
       )}
