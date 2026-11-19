@@ -56,6 +56,14 @@ router.put('/:id', authRequired, adminOnly, async (req,res)=>{
   const r = await db.query('SELECT * FROM employees WHERE id=$1', [req.params.id]);
   const emp = r.rows[0];
   if(!emp) return res.status(404).json({error:'Not found'});
+  // handle employee_id change
+  if (b.employee_id && b.employee_id !== emp.employee_id) {
+    const ex = await db.query('SELECT id FROM employees WHERE employee_id=$1', [b.employee_id]);
+    if (ex.rows[0]) return res.status(400).json({error:'Employee ID already exists'});
+    await db.query('UPDATE employees SET employee_id=$1 WHERE id=$2', [b.employee_id, emp.id]);
+    await db.query('UPDATE employment_history SET employee_id=$1 WHERE employee_fk=$2', [b.employee_id, emp.id]);
+    await db.query('UPDATE attendance_records SET employee_id=$1 WHERE employee_fk=$2', [b.employee_id, emp.id]);
+  }
   await db.query(`UPDATE employees SET name=$1,designation=$2,department=$3,pg=$4,contact_number=$5,employment_type=$6,employment_status=$7,remarks=$8,updated_by=$9,updated_at=NOW() WHERE id=$10`,
     [b.name||emp.name, b.designation??emp.designation, b.department??emp.department, b.pg??emp.pg, b.contact_number??emp.contact_number, b.employment_type??emp.employment_type, b.employment_status??emp.employment_status, b.remarks??emp.remarks, req.user.id, req.params.id]);
   if(b.pg) await db.query('INSERT INTO production_groups (name) VALUES ($1) ON CONFLICT (name) DO NOTHING', [b.pg]);

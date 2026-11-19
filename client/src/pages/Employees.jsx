@@ -91,7 +91,7 @@ export default function Employees(){
           <div className="bg-white p-6 rounded w-full max-w-lg max-h-[90vh] overflow-auto">
             <h2 className="font-bold mb-3">{editing?'Edit Employee':'Add Employee'}</h2>
             <div className="grid grid-cols-2 gap-2">
-              <input className="border p-2" placeholder="Employee ID" value={form.employee_id} disabled={!!editing} onChange={e=>setForm({...form,employee_id:e.target.value})} />
+              <input className="border p-2" placeholder="Employee ID" value={form.employee_id} onChange={e=>setForm({...form,employee_id:e.target.value})} />
               <input className="border p-2" placeholder="Name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} />
               <input className="border p-2" placeholder="Designation" value={form.designation} onChange={e=>setForm({...form,designation:e.target.value})} />
               <input className="border p-2" placeholder="Department" value={form.department} onChange={e=>setForm({...form,department:e.target.value})} />
